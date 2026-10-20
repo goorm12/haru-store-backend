@@ -90,3 +90,8 @@ $env:JAVA_TOOL_OPTIONS = "-Djdk.net.unixdomain.tmpdir=$((Resolve-Path .gradle\ja
 - [공지·문의 정책](https://github.com/goorm12/haru-store-buyer/blob/develop/docs/common/communication-policy.md)
 
 API 경로·DB 모델은 아직 확정하지 않았습니다. 서버 구현 시 위 요구사항과 역할별 소유권 검증을 기준으로 설계합니다.
+
+## 백엔드 전용 문서
+
+[문서 안내](docs/README.md)에서 백엔드 요구사항과 기능명세서를 확인합니다.
+구매자(buyer)·판매자 및 플랫폼 관리자(management)의 공통 정책에 맞춰 기능별 이용 주체, 처리 규칙, 결과, 예외와 확인 기준을 정리합니다.
