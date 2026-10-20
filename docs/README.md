@@ -9,6 +9,7 @@
 | [백엔드 요구사항](./backend/requirements.md) | 서버 책임, 권한, 범위와 원본 기능·정책 추적 |
 | [백엔드 기능 명세](./backend/functional-spec.md) | 인증·예약·수량·상태·알림·탈퇴 처리와 실패 복구 |
 | [백엔드 기술 스택](./backend/tech-stack.md) | Java 21, Spring Boot, PostgreSQL, JPA 등 기술 선정 배경과 역할 |
+| [커밋 메시지 규칙](./backend/commit-convention.md) | 타입별 제목 규칙, 이슈 번호 연동, 본문 작성 형식 가이드 |
 
 ## 기준 문서와 변경 관리
 
