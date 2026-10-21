@@ -1,0 +1,31 @@
+spring:
+  application:
+    # 스프링 부트 애플리케이션의 고유 이름 (모니터링, 로그, MSA 식별용)
+    name: haru-store-backend
+
+  # 1. 데이터베이스 접속 정보 (DataSource)
+  datasource:
+    # PostgreSQL 전용 JDBC 통신 드라이버 클래스
+    driver-class-name: org.postgresql.Driver
+    # DB 접속 URL: 환경변수 DB_URL이 있으면 우선 적용, 없으면 로컬 기본값 사용
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/haru_store}
+    # DB 계정명: 환경변수 DB_USERNAME이 있으면 우선 적용, 없으면 postgres 사용
+    username: ${DB_USERNAME:postgres}
+    # DB 비밀번호: 보안을 위해 환경변수 DB_PASSWORD로 주입받음 (기본값 빈 문자열)
+    password: ${DB_PASSWORD:}
+
+  # 2. JPA & Hibernate ORM 설정
+  jpa:
+    hibernate:
+      # 자바 Entity 코드를 바탕으로 DB 테이블 자동 생성/갱신 (update: 변경점만 반영)
+      ddl-auto: update
+    properties:
+      hibernate:
+        # PostgreSQL 전용 SQL 문법 생성기 (방언 Dialect 설정)
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # 콘솔창에 출력되는 SQL 쿼리를 읽기 쉽게 들여쓰기 포맷팅
+        format_sql: true
+        # JPA가 실행하는 실제 SQL 쿼리를 콘솔창에 출력
+        show_sql: true
+    # OSIV(Open Session In View) 비활성화: 트랜잭션 종료 시 즉시 DB 커넥션을 반납하여 성능 및 커넥션 누수 방지
+    open-in-view: false

@@ -18,13 +18,28 @@ repositories {
 }
 
 dependencies {
+	// 1. 요청 데이터 유효성 검사 (형식, 필수값 검증 어노테이션 제공: @NotBlank, @Min 등)
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+	// 2. 스프링 웹 MVC (REST API 컨트롤러 및 톰캣 내장 웹 서버 제공)
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+
+	// 3. Spring Data JPA (자바 객체와 DB 테이블을 매핑해주는 ORM 핵심 라이브러리, Hibernate 포함)
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	// 4. PostgreSQL JDBC 드라이버 (스프링과 PostgreSQL DB 엔진이 통신할 수 있게 해주는 전용 케이블)
+	runtimeOnly 'org.postgresql:postgresql'
+
+	// 5. 테스트용 인메모리 DB H2 (실제 PostgreSQL을 건드리지 않고 메모리에서 빠르게 테스트하기 위한 용도)
+	testImplementation 'com.h2database:h2'
+
+	// 6. 테스트 환경을 위한 유효성 검사 및 웹 MVC 테스트 지원 라이브러리
 	testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+
+	// 7. JUnit 5 테스트 엔진을 실행(런처)하기 위한 런타임 라이브러리
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
-
-tasks.named('test') {
+tasks.named('test', Test) {
 	useJUnitPlatform()
 }
