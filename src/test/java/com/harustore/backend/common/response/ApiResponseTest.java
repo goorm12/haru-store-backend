@@ -112,4 +112,31 @@ class ApiResponseTest {
         assertThat(jsonNode.has("data")).isTrue();
         assertThat(jsonNode.get("data").isNull()).isTrue();
     }
+
+    @Test
+    @DisplayName("에러 응답 - 상세 데이터(예: 필드 에러 목록)를 함께 포함하여 직렬화된다")
+    void errorResponseWithData() throws Exception {
+        // given
+        String errorCode = "INVALID_INPUT_VALUE";
+        String errorMessage = "입력값 검증에 실패했습니다.";
+        Map<String, String> errorDetail = Map.of("field", "email", "reason", "이메일 형식 오류");
+
+        // when
+        ApiResponse<Map<String, String>> response = ApiResponse.error(errorCode, errorMessage, errorDetail);
+        String json = objectMapper.writeValueAsString(response);
+        JsonNode jsonNode = objectMapper.readTree(json);
+
+        // then
+        assertThat(response.isSuccess()).isFalse();
+        assertThat(response.getCode()).isEqualTo(errorCode);
+        assertThat(response.getMessage()).isEqualTo(errorMessage);
+        assertThat(response.getData()).isEqualTo(errorDetail);
+
+        // JSON 검증
+        assertThat(jsonNode.get("success").asBoolean()).isFalse();
+        assertThat(jsonNode.get("code").asText()).isEqualTo(errorCode);
+        assertThat(jsonNode.get("message").asText()).isEqualTo(errorMessage);
+        assertThat(jsonNode.get("data").get("field").asText()).isEqualTo("email");
+        assertThat(jsonNode.get("data").get("reason").asText()).isEqualTo("이메일 형식 오류");
+    }
 }

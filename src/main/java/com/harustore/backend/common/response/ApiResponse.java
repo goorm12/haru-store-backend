@@ -64,12 +64,19 @@ public class ApiResponse<T> {
     }
 
     /**
-     * 실패(에러) 응답 팩토리 메서드 (예외 처리 및 GlobalExceptionHandler에서 사용)
-     * 실패 시에는 에러 식별 코드(code)와 원인 메시지(message)를 함께 내려주며, data는 null로 설정됩니다.
+     * 실패(에러) 응답 팩토리 메서드 (상세 데이터 없이 에러 코드와 메시지만 전달하는 일반적인 경우)
      * 예: return ApiResponse.error("OUT_OF_STOCK", "남은 공구 수량이 부족합니다.");
      */
     public static <T> ApiResponse<T> error(String code, String message) {
         return new ApiResponse<>(false, message, null, code);
+    }
+
+    /**
+     * 실패(에러) 응답 팩토리 메서드 (유효성 검사 실패 시 필드별 에러 목록 등 상세 데이터를 함께 담는 경우)
+     * 예: return ApiResponse.error("INVALID_INPUT_VALUE", "입력값 검증에 실패했습니다.", errorDetails);
+     */
+    public static <T> ApiResponse<T> error(String code, String message, T data) {
+        return new ApiResponse<>(false, message, data, code);
     }
 
     /**
