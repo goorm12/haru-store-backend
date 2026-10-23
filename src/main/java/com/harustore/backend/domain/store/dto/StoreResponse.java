@@ -1,10 +1,23 @@
 package com.harustore.backend.domain.store.dto;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.harustore.backend.domain.store.entity.Store;
 import com.harustore.backend.domain.store.entity.StoreStatus;
 
 import java.time.LocalDateTime;
 
+@JsonPropertyOrder({
+        "id",
+        "name",
+        "description",
+        "sellerId",
+        "sellerName",
+        "address",
+        "phoneNumber",
+        "operatingHours",
+        "status",
+        "createdAt"
+})
 public class StoreResponse {
     private final Long id;
     private final Long sellerId;
