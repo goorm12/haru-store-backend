@@ -49,4 +49,11 @@ public class Member extends BaseEntity {
     public String getPhoneNumber() { return phoneNumber; }
     public MemberRole getRole() { return role; }
     public MemberStatus getStatus() { return status; }
+
+    //  9. 비즈니스 로직: 판매자 승격
+    public void promoteToSeller() {
+        if (this.role == MemberRole.BUYER) {
+            this.role = MemberRole.SELLER;
+        }
+    }
 }
