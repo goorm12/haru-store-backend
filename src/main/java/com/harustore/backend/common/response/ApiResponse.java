@@ -25,17 +25,17 @@ public class ApiResponse<T> {
     // 실패(에러) 상황 시 프론트엔드가 에러 유형을 식별하고 예외 처리할 수 있도록 돕는 에러 코드
     // 성공 시에는 null이 되며, @JsonInclude(NON_NULL) 설정에 의해 JSON 결과에서 깔끔하게 자동 생략됩니다.
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private final String code;
+    private final String errorCode;
 
     /**
      * 외부에서 new 키워드로 무분별하게 객체를 직접 생성하지 못하도록 private 생성자로 제한합니다.
      * 객체 생성은 아래 정의된 명확한 의미의 정적 팩토리 메서드(success, error)를 통해서만 진행합니다.
      */
-    private ApiResponse(boolean success, String message, T data, String code) {
+    private ApiResponse(boolean success, String message, T data, String errorCode) {
         this.success = success;
         this.message = message;
         this.data = data;
-        this.code = code;
+        this.errorCode = errorCode;
     }
 
     /**
@@ -101,9 +101,9 @@ public class ApiResponse<T> {
     }
 
     /**
-     * 에러 코드를 반환 ("code" JSON 필드 키로 매핑됨, null인 경우 JSON에서 생략됨)
+     * 에러 코드를 반환 ("errorCode" JSON 필드 키로 매핑됨, null인 경우 JSON에서 생략됨)
      */
-    public String getCode() {
-        return code;
+    public String errorCode() {
+        return errorCode;
     }
 }
