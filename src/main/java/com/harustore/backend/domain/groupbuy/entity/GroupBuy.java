@@ -1,6 +1,8 @@
 package com.harustore.backend.domain.groupbuy.entity;
 
 import com.harustore.backend.common.entity.BaseEntity;
+import com.harustore.backend.common.exception.BusinessException;
+import com.harustore.backend.common.exception.ErrorCode;
 import com.harustore.backend.domain.store.entity.Store;
 import jakarta.persistence.*;
 
@@ -115,6 +117,23 @@ public class GroupBuy extends BaseEntity {
      */
     public int getRemainingQuantity() {
         return this.totalQuantity - this.reservedQuantity;
+    }
+
+    /**
+     * 예약 수량 증가(재고 선점)
+     */
+    public void increaseReservedQuantity(int count) {
+        if(this.reservedQuantity + count > this.totalQuantity) {
+            throw new BusinessException(ErrorCode.OUT_OF_STOCK);
+        }
+        this.reservedQuantity += count;
+    }
+
+    /**
+     * 예약 수량 감소(취소 또는 수량 감소 시 재고 반환)
+     */
+    public void decreaseReservedQuantity(int count) {
+        this.reservedQuantity = Math.max(0, this.reservedQuantity - count);
     }
 
     // --- Getter 메서드 ---

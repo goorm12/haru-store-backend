@@ -2,11 +2,17 @@ package com.harustore.backend.domain.groupbuy.repository;
 
 import com.harustore.backend.domain.groupbuy.entity.GroupBuy;
 import com.harustore.backend.domain.groupbuy.entity.GroupBuyStatus;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface GroupBuyRepository extends JpaRepository<GroupBuy,Long> {
+import java.util.Optional;
+
+public interface GroupBuyRepository extends JpaRepository<GroupBuy, Long> {
     // TODO 1. [구매자용 둘러보기] 특정 상태(status)의 공구 목록 전체 페이징 조회
     // 홈 화면이나 둘러보기 탭에서 현재 접수 중(OPEN)인 공구들을 모아서 보여줄 때 사용
     Page<GroupBuy> findByStatus(GroupBuyStatus status, Pageable pageable);
@@ -22,4 +28,11 @@ public interface GroupBuyRepository extends JpaRepository<GroupBuy,Long> {
     // TODO 4. [검색용] 공구 제목(title) 키워드 검색 및 상태별 페이징 조회
     // 손님이 상품명을 검색했을 때 키워드가 포함된 접수 중(OPEN) 공구들을 찾을 때 사용
     Page<GroupBuy> findByStatusAndTitleContaining(GroupBuyStatus status, String title, Pageable pageable);
+
+    // TODO 5. [동시성 제어 락] 선착순 예약 시 재고 오버셀을 방지하기 위한 비관적 락(PESSIMISTIC_WRITE) 공구 단건 조회
+    // 힌트: @Lock(LockModeType.PESSIMISTIC_WRITE)과 @Query("SELECT g FROM GroupBuy g WHERE g.id = :id")
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT g FROM GroupBuy  g WHERE  g.id = :id")
+    Optional<GroupBuy> findByIdWithLock(@Param("id") Long id);
+
 }
