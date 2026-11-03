@@ -8,12 +8,17 @@ import com.harustore.backend.domain.groupbuy.repository.GroupBuyRepository;
 import com.harustore.backend.domain.member.entity.Member;
 import com.harustore.backend.domain.member.repository.MemberRepository;
 import com.harustore.backend.domain.reservation.dto.ReservationCreateRequest;
+import com.harustore.backend.domain.reservation.dto.ReservationQuantityUpdateRequest;
+import com.harustore.backend.domain.reservation.dto.ReservationResponse;
 import com.harustore.backend.domain.reservation.entity.Reservation;
 import com.harustore.backend.domain.reservation.entity.ReservationStatus;
 import com.harustore.backend.domain.reservation.repository.ReservationRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -129,7 +134,42 @@ public class ReservationService {
     //   2단계: 본인 확인 (조회된 예약의 구매자가 현재 로그인한 본인이 맞는지 검증)
     //   3단계: 상세 예약 정보 반환
     // =========================================================================
+    public Page<ReservationResponse> getMyReservations(Long memberId, Pageable pageable) {
 
+        // [1단계] 존재하는 회원인지 확인
+        boolean isMember = memberRepository.existsById(memberId);
+
+        if(!isMember) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        // [2단계] 최신순 페이징 조회
+        Page<Reservation> reservationPage = reservationRepository.findByBuyerId(memberId, pageable);
+
+        // [3단계] 반환
+        return reservationPage.map(ReservationResponse::new);
+    }
+
+    public ReservationResponse getMyReservation(Long memberId, Long reservationId) {
+        // [1단계] 존재하는 회원인지 확인
+        boolean isMember = memberRepository.existsById(memberId);
+
+        if(!isMember) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        // [2단계] 존재하는 예약인지 확인
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(()-> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+        // [3단계] 본인 예약인지 소유권 확인
+        if(!reservation.getBuyer().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED,"본인의 예약만 조회할 수 있습니다.");
+        }
+
+        // [4단계] DTO로 반환
+        return new ReservationResponse(reservation);
+    }
 
 
     // =========================================================================
@@ -150,7 +190,99 @@ public class ReservationService {
     //   7단계: 예약 데이터의 수량 및 총금액(단가 × 변경된 수량) 갱신
     //   8단계: 변경된 예약 결과 반환
     // =========================================================================
+    @Transactional
+    public ReservationResponse updateReservationQuantity(
+            Long memberId,
+            Long reservationId,
+            ReservationQuantityUpdateRequest request
+    ) {
+        // [1단계] 존재하는 회원인지 확인
+        boolean  isMember = memberRepository.existsById(memberId);
+        if(!isMember) {
+            throw new BusinessException(ErrorCode.MEMBER_NOT_FOUND);
+        }
 
+        // [2단계] 대상 예약 정보
+        Reservation reservation = reservationRepository.findByIdWithLock(reservationId)
+                .orElseThrow(()-> new BusinessException(ErrorCode.RESERVATION_NOT_FOUND));
+
+
+        // [3단계] 본인이 예약한것이 맞는지 확인
+        if(!reservation.getBuyer().getId().equals(memberId)) {
+            throw new BusinessException(ErrorCode.ACCESS_DENIED,"본인이 예약한 공구만 변경이 가능합니다.");
+        }
+
+        // [4단계] 현재 상태 확인
+        if(reservation.getStatus() != ReservationStatus.RESERVED ) {
+            throw new BusinessException(ErrorCode.INVALID_RESERVATION_STATUS, "예약 완료 상태에서만 수량을 변경할 수 있습니다.");
+        }
+
+        // [5단계] 변경 가능 기한 확인
+        LocalDate today =  LocalDate.now();
+        LocalDate pickupStartDate = reservation.getPickupStartDate();
+
+        // 오늘이 픽업 시작일 보다 이전(전날까지)이 아니면? (즉, 오늘이 픽업당일이거나 지난 날짜라면
+        if(!today.isBefore(pickupStartDate)) {
+            throw new BusinessException(ErrorCode.QUANTITY_REDUCE_DEADLINE_EXCEEDED,"픽업 시작일 당일부터는 구매자가 직접 수량을 변경할 수 없습니다. 판매자에게 문의해 주세요.");
+        }
+
+
+        int currentQuantity = reservation.getQuantity();
+        int newQuantity = request.getNewQuantity();
+
+        // 1. 수량이 그대로인 경우 (아무것도 안 함)
+        if (newQuantity == currentQuantity) {
+            return new ReservationResponse(reservation);
+        }
+
+        // 공구 정보
+        GroupBuy groupBuy = groupBuyRepository.findByIdWithLock(reservation.getGroupBuy().getId())
+                .orElseThrow(() -> new BusinessException(ErrorCode.GROUP_BUY_NOT_FOUND));
+
+        // 2. 수량을 줄이는 경우
+        if(newQuantity < currentQuantity) {
+            // 취소 제한 제품인지 확인
+            if(reservation.isCancellationRestricted()) {
+                throw new BusinessException(ErrorCode.CANCEL_RESTRICTED);
+            }
+
+            // 줄어든 만큼 공구 재고 반환
+            int diff =  currentQuantity - newQuantity;
+            groupBuy.decreaseReservedQuantity(diff);
+
+        }
+        // 3. 수량을 늘리는 경우
+        else {
+            int diff = newQuantity - currentQuantity;
+
+
+
+            // 공구 상태가 여전히 OPEN인지
+            if(!groupBuy.getStatus().equals(GroupBuyStatus.OPEN)) {
+                throw new BusinessException(ErrorCode.GROUP_BUY_NOT_OPEN);
+            }
+
+            // 추가 수량(diff)만큼 남은 재고가 충분한지 확인
+            if(groupBuy.getRemainingQuantity() < diff) {
+                throw new BusinessException(ErrorCode.OUT_OF_STOCK);
+            }
+
+            // 1인당 구매 제한을 넘지 않는지 확인
+            Integer maxLimit = groupBuy.getMaxLimitPerUser();
+            if (maxLimit != null && maxLimit < newQuantity) {
+                throw new BusinessException(ErrorCode.EXCEED_MAX_LIMIT_PER_USER);
+            }
+
+            groupBuy.increaseReservedQuantity(diff);
+        }
+
+
+        // [마지막 단계] 예약 엔티티의 수량 및 총금액(단가 × newQuantity) 갱신
+        reservation.changeQuantity(newQuantity);
+        // 변경된 결과 반환!
+        return new ReservationResponse(reservation);
+
+    }
 
 
     // =========================================================================
@@ -166,6 +298,7 @@ public class ReservationService {
     //   7단계: 예약 상태를 취소로 변경하고, 취소 사유, 취소 주체(구매자), 취소 일시 기록
     //   8단계: 취소 결과 반환
     // =========================================================================
+    
 
 
 
