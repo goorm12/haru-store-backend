@@ -44,6 +44,7 @@ public enum ErrorCode {
     CANCEL_DEADLINE_EXCEEDED(HttpStatus.BAD_REQUEST, "R006", "픽업 시작일 당일부터는 직접 취소가 불가하며 판매자에게 문의해야 합니다."),
     QUANTITY_REDUCE_DEADLINE_EXCEEDED(HttpStatus.BAD_REQUEST, "R007", "픽업 시작일 당일부터는 직접 수량을 줄일 수 없습니다.");
 
+
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
