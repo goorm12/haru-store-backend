@@ -42,7 +42,12 @@ public enum ErrorCode {
     INVALID_RESERVATION_STATUS(HttpStatus.BAD_REQUEST, "R004", "현재 상태에서는 처리할 수 없는 예약입니다."),
     CANCEL_RESTRICTED(HttpStatus.BAD_REQUEST, "R005", "직접 취소가 제한된 공구 품목입니다."),
     CANCEL_DEADLINE_EXCEEDED(HttpStatus.BAD_REQUEST, "R006", "픽업 시작일 당일부터는 직접 취소가 불가하며 판매자에게 문의해야 합니다."),
-    QUANTITY_REDUCE_DEADLINE_EXCEEDED(HttpStatus.BAD_REQUEST, "R007", "픽업 시작일 당일부터는 직접 수량을 줄일 수 없습니다.");
+    QUANTITY_REDUCE_DEADLINE_EXCEEDED(HttpStatus.BAD_REQUEST, "R007", "픽업 시작일 당일부터는 직접 수량을 줄일 수 없습니다."),
+
+    // ==========================================
+    // 4. 결제(Payment) 도메인 에러 (P)
+    // ==========================================
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "P001", "결제 기록을 찾을 수 없습니다.");
 
 
     private final HttpStatus httpStatus;
