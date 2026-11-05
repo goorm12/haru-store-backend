@@ -19,7 +19,7 @@ public class FavoriteStoreController {
 
     // 단골 등록
     @PostMapping("/{storeId}/favorite")
-    public ApiResponse<Boolean> addFavorite(@RequestParam Long memberId, @PathVariable Long storeId){
+    public ApiResponse<Boolean> addFavorite(@RequestHeader("X-Member-Id") Long memberId, @PathVariable Long storeId){
         boolean isFavorite = favoriteService.toggleFavorite(memberId, storeId);
 
         String message = isFavorite ? "단골 등록이 완료되었습니다.":"단골 등록이 해제되었습니다.";
@@ -31,7 +31,7 @@ public class FavoriteStoreController {
      * 찜도 안되어있다면, 찜 + 대표 상점 등록
      */
     @PostMapping("/{storeId}/default")
-    public ApiResponse<Boolean> setDefaultStore(@RequestParam Long memberId, @PathVariable Long storeId){
+    public ApiResponse<Boolean> setDefaultStore(@RequestHeader("X-Member-Id") Long memberId, @PathVariable Long storeId){
         boolean result = favoriteService.setDefaultStore(memberId, storeId);
         return ApiResponse.success("기본 상점으로 지정되었습니다.", result);
     }
@@ -39,7 +39,7 @@ public class FavoriteStoreController {
 
     // 단골 상점 조회
     @GetMapping("/favorites")
-    public ApiResponse<List<FavoriteStoreResponse>> getFavoriteStores(@RequestParam Long memberId){
+    public ApiResponse<List<FavoriteStoreResponse>> getFavoriteStores(@RequestHeader("X-Member-Id") Long memberId){
         List<FavoriteStoreResponse> response = favoriteService.getFavoriteStores(memberId);
         return ApiResponse.success("단골 상점 조회가 완료되었습니다.", response);
     }

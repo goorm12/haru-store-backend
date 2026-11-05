@@ -52,7 +52,7 @@ public class StoreController {
     @PatchMapping("/{storeId}")
     public ApiResponse<StoreResponse> updateStore(
             @PathVariable Long storeId,
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @Valid @RequestBody StoreUpdateRequest request
     ) {
        StoreResponse response = storeService.updateStore(storeId, memberId, request);
@@ -62,7 +62,7 @@ public class StoreController {
 
     // 5. [판매자용] 본인이 소유한 상점 목록 전체 조회
     @GetMapping("/mine")
-    public ApiResponse<List<StoreResponse>> getMyStores(@RequestParam Long sellerId) {
+    public ApiResponse<List<StoreResponse>> getMyStores(@RequestHeader("X-Member-Id") Long sellerId) {
        List<StoreResponse> response = storeService.getMyStores(sellerId);
        return  ApiResponse.success("내 상점 목록 조회가 완료되었습니다.",response);
     }

@@ -27,12 +27,12 @@ public class GroupBuyController {
     // ==========================================
     // TODO 1. [공구 판매글 등록] POST /api/group-buys?memberId=1
     // ==========================================
-    // - 입력: @RequestParam Long memberId, @Valid @RequestBody GroupBuyCreateRequest request
+    // - 입력: @RequestHeader("X-Member-Id") Long memberId, @Valid @RequestBody GroupBuyCreateRequest request
     // - 역할: 사장님이 본인 상점에 새로운 공구 판매글 개설 (DRAFT 또는 OPEN)
     // - 응답: ApiResponse<Long> ("공구 판매글이 등록되었습니다.", 생성된 groupBuyId)
     @PostMapping
     public ApiResponse<Long> createGroupBuy(
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @Valid @RequestBody GroupBuyCreateRequest request) {
         Long groupBuyId = groupBuyService.createGroupBuy(memberId, request);
         return ApiResponse.success("공구 판매글이 등록되었습니다.", groupBuyId);
@@ -40,12 +40,12 @@ public class GroupBuyController {
     // ==========================================
     // TODO 2. [공구 정보 부분 수정] PATCH /api/group-buys/{groupBuyId}?memberId=1
     // ==========================================
-    // - 입력: @PathVariable Long groupBuyId, @RequestParam Long memberId, @Valid @RequestBody GroupBuyUpdateRequest request
+    // - 입력: @PathVariable Long groupBuyId, @RequestHeader("X-Member-Id") Long memberId, @Valid @RequestBody GroupBuyUpdateRequest request
     // - 역할: 사장님이 공구 정보(단가, 수량, 제목 등)를 부분 수정 (더티 체킹)
     // - 응답: ApiResponse<Long> ("공구 정보가 수정되었습니다.", groupBuyId)
     @PatchMapping("/{groupBuyId}")
     public ApiResponse<Long> patchGroupBuyInfo(
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @PathVariable Long groupBuyId,
             @Valid @RequestBody GroupBuyUpdateRequest request) {
         Long updatedId  = groupBuyService.updateGroupBuy(memberId, groupBuyId, request);
@@ -56,12 +56,12 @@ public class GroupBuyController {
     // ==========================================
     // TODO 3. [판매자 수동 접수 마감] PATCH /api/group-buys/{groupBuyId}/close?memberId=1
     // ==========================================
-    // - 입력: @PathVariable Long groupBuyId, @RequestParam Long memberId
+    // - 입력: @PathVariable Long groupBuyId, @RequestHeader("X-Member-Id") Long memberId
     // - 역할: 사장님이 진행 중(OPEN)인 공구를 수동으로 마감(CLOSED) 처리
     // - 응답: ApiResponse<Long> ("공구 접수가 마감되었습니다.", groupBuyId)
     @PatchMapping("/{groupBuyId}/close")
     public ApiResponse<Long> closeGroupBuy(
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @PathVariable Long groupBuyId
     ) {
         Long closedId = groupBuyService.closeGroupBuy(memberId, groupBuyId);
@@ -72,12 +72,12 @@ public class GroupBuyController {
     // ==========================================
     // TODO 4. [판매자 접수 재개] PATCH /api/group-buys/{groupBuyId}/reopen?memberId=1
     // ==========================================
-    // - 입력: @PathVariable Long groupBuyId, @RequestParam Long memberId
+    // - 입력: @PathVariable Long groupBuyId, @RequestHeader("X-Member-Id") Long memberId
     // - 역할: 마감(CLOSED) 상태인 공구를 다시 접수 중(OPEN) 상태로 재개
     // - 응답: ApiResponse<Long> ("공구 접수가 재개되었습니다.", groupBuyId)
     @PatchMapping("/{groupBuyId}/reopen")
     public ApiResponse<Long> reopenGroupBuy(
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @PathVariable Long groupBuyId
     ) {
         Long reopenedId = groupBuyService.reopenGroupBuy(memberId, groupBuyId);
@@ -88,12 +88,12 @@ public class GroupBuyController {
     // ==========================================
     // TODO 5. [판매자 공구 전체 취소] PATCH /api/group-buys/{groupBuyId}/cancel?memberId=1
     // ==========================================
-    // - 입력: @PathVariable Long groupBuyId, @RequestParam Long memberId
+    // - 입력: @PathVariable Long groupBuyId, @RequestHeader("X-Member-Id") Long memberId
     // - 역할: 부득이한 사정으로 공구를 전체 취소(CANCELLED) 처리
     // - 응답: ApiResponse<Long> ("공구가 전체 취소되었습니다.", groupBuyId)
     @PatchMapping("/{groupBuyId}/cancel")
     public ApiResponse<Long> cancelGroupBuy(
-            @RequestParam Long memberId,
+            @RequestHeader("X-Member-Id") Long memberId,
             @PathVariable Long groupBuyId
     ) {
         Long cancelledId = groupBuyService.cancelGroupBuy(memberId, groupBuyId);
